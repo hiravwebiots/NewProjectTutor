@@ -1,0 +1,19 @@
+Step 1
+
+✔ User Registration
+✔ Login
+✔ if Tutor ==> need approval by admin
+✔ Role based redirect
+
+Step 2
+
+✔ Admin dashboard
+✔ Tutor approval system
+
+Step 3
+
+✔ Tutor course creation
+
+Step 4
+
+✔ Student enrollment
