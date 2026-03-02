@@ -28,7 +28,6 @@ const uploadDegree = multer({
     limits : { fileSize : 5 * 1024 * 1024 } // 5MB
 })
 
-
 // ==== course video storage ====
 const videoStorage = multer.diskStorage({
     destination : (req, file, cb) => {
@@ -49,11 +48,38 @@ const videoFilter = (req, file, cb) => {
     }
 }
 
+
 const uploadVideo = multer({
     storage : videoStorage,
     fileFilter : videoFilter,
-    limits : { fileSize : 1 * 1024 * 1024 * 1024 } // 1GB
+    limits : { fileSize : 500 * 1024 * 1024 } // 500MB
 })
 
+// ==== material storage during apload video ====
+const pdfStorage = multer.diskStorage({
+    destination : (req, file, cb) => {
+        cb(null, 'uploads/course-materials')
+    },
+    filename : (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+})
 
-module.exports = { uploadDegree, uploadVideo }
+const pdfFilter = (req, file, cb) => {
+    const allowTypes = [ 'application/pdf' ]
+
+    if(allowTypes.includes(file.mimetype)){
+        cb(null, true)
+    } else {
+        console.log("Error : Here");
+        cb(new Error('only pdf allow'), false)
+    }
+}
+
+const uploadPdf = multer({
+    storage : pdfStorage,
+    fileFilter : pdfFilter,
+    limits : { fileSize : 5 * 1024 * 1024 * 1024 } 
+})
+
+module.exports = { uploadDegree, uploadVideo, uploadPdf }

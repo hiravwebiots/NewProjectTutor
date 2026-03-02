@@ -9,13 +9,16 @@ const courseSchema = mongoose.Schema({
         type : String,
         required : true
     },
-    descriptopm : {
+    description : {
         type : String
     },
     // thumbnil : {
 
     // },
     video : {
+        type : String
+    },
+    material : {
         type : String
     },
     price : {
@@ -27,7 +30,7 @@ const courseSchema = mongoose.Schema({
 },{
     timestamps : true
     }
-)   
+)
 
 const courseModel = mongoose.model('course', courseSchema)
 module.exports = courseModel

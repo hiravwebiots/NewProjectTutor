@@ -6,13 +6,15 @@ const tutroStatusRoutes = require('./routes/checkStatusRoutes')
 const connectDB = require("./config/db")
 const emaulTemplate = require('./routes/emailTemplateRoutes')
 const forgotPassword = require('./routes/otpRoutes')
-const profile = require('./routes/profileChangeRoutes')
+const profile = require('./routes/profileRoutes')
 const course = require('./routes/courseRoutes')
 
 const app = express()
 connectDB()
 
 app.use(express.json())
+app.use(express.urlencoded())
+
 app.use('/api/user', loginRoutes)
 app.use('/api/email-template', emaulTemplate)
 app.use('/api/login', forgotPassword)

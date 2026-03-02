@@ -6,6 +6,4 @@ const routes = express()
 routes.post('/signup', uploadDegree.single('degreeCertificate'), signupUser)
 routes.post('/login', loginUser)
 
-
-
 module.exports = routes

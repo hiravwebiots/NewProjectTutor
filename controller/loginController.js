@@ -60,7 +60,7 @@ const signupUser = async(req, res) => {
             qualification : role === 'tutor' ? qualification : undefined,
             degreeCertificate : role === 'tutor' ? req.file.path : undefined,
             approvalStatus : role === 'tutor' ? 'pending' : undefined
-        });
+        })
 
         res.status(201).json({ status: 1, message: "User registered successfully", data: user });
 
@@ -73,7 +73,7 @@ const signupUser = async(req, res) => {
 // login
 const loginUser = async (req, res) => {
     try{
-        const { email, password } = req.body;
+        let { email, password } = req.body;
 
         if(!email || !password){
             return res.status(400).json({ status : 0, message : "email and password required"})
@@ -88,6 +88,9 @@ const loginUser = async (req, res) => {
         if(!isPassword) {
             return res.status(400).json({ status : 0, message: "Invalid Password" });
         }
+
+        // don't show the password after login data 
+        user.password = undefined
 
         // tutor approval check
         if(user.role === "tutor"){

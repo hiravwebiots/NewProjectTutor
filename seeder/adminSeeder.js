@@ -20,7 +20,8 @@ const seedAdmin = async () => {
                 email : process.env.ADMIN_EMAIL,
                 password : hashPassword,
                 phone : 7069146434,
-                role : 'admin'
+                role : 'admin',
+                approvalStatus : "approved"
             })
             console.log('Default Admin Created');
         } else{

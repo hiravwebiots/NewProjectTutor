@@ -10,7 +10,7 @@ const checkAuthentication = (req, res, next) => {
         
         const verify = jwt.verify(token, process.env.SECRET)
         req.user = verify
-        console.log("req.user : ", req.user);
+        console.log("Token Data : ", req.user);
         
         next()
 
