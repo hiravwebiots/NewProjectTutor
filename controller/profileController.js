@@ -36,7 +36,12 @@ const updateProfile = async (req, res) => {
             if(user.approvalStatus === 'pending'){
                 return res.status(400).json({ status : 0, message : "Profile cannot be updated while approval is pending" })
             }
-        
+            
+            if(user.approvalStatus === 'rejected'){
+                return res.status(400).json({ status : 0, message : "Please Reapply for the tutor" })
+            }
+
+            // if status == "approved"
             if (bio) user.bio = bio;
             if (experience) user.experience = experience;
             if (qualification) user.qualification = qualification;
@@ -48,19 +53,16 @@ const updateProfile = async (req, res) => {
                     return res.status(400).json({ status : 0, message : "Approved tutor cannot change degree certificate" })
                 }
 
-                if(user.approvalStatus === 'rejected'){
-                    if(user.degreeCertificate && fs.existsSync(user.degreeCertificate)){
-                        fs.unlink(user.degreeCertificate)
-                    }
-
-                    // save new degree
-                    user.degreeCertificate = req.file.path
-                }
+                // if(user.approvalStatus === 'rejected'){
+                //     if(user.degreeCertificate && fs.existsSync(user.degreeCertificate)){
+                //         fs.unlink(user.degreeCertificate)
+                //     }
+                // }
 
                 // If rejected and re-uploaded degree → send to pending
-                if (user.approvalStatus === "rejected") {
-                    user.approvalStatus = "pending";
-                }
+                // if (user.approvalStatus === "rejected") {
+                //     user.approvalStatus = "pending";
+                // }
             }   
         }
 
@@ -88,6 +90,10 @@ const deleteProfile = async (req, res) => {
             return res.status(404).json({ status: 0, message: "User not found" });
         }
 
+        if(user.role === 'admin'){
+            return res.status(200).json({ status : 0, message : "admin can't delete the account" })
+        }
+
         // only for tutor
         if(user.role === "tutor"){
             
@@ -110,6 +116,5 @@ const deleteProfile = async (req, res) => {
         res.status(500).json({ status: 0, message: "Error while deleting account" });
     }
 };
-
 
 module.exports = { getAllProfile, updateProfile, deleteProfile }

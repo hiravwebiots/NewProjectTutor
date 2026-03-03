@@ -8,30 +8,47 @@ const addCourse = async(req, res) => {
         const { title, description, price, category } = req.body
         const tutorId = req.user.id    // from check middleware
 
+        const videoFile = req.files?.video?.[0]
+        const materialFile = req.files?.material?.[0]
+
         console.log("tutorId : ", tutorId);
 
-        if(!title || !description || !req.file || !price || !category){
-            return res.status(400).json({ status : 0, message : "all fileds are required" })
-        }
+        console.log("title :", title);
+        console.log("description :", description);
+        
+        console.log("price :", price);
+        console.log("category :", category);
+        
+        console.log("video :", videoFile);
+        console.log("material : ", materialFile);
+        
 
+        
+        
+        if(!title || !description || !videoFile ||  !materialFile || !price || !category){
+            return res.status(400).json({ status : 0, message : "all fileds are required in add Course" })
+        }
+        
+        
         // ==== check exist tutor ====
         const checkTutor = await userModel.findById(tutorId)
         if(!checkTutor || checkTutor.role !== 'tutor'){
-            return res.status(404).json({ status : 0, message : "tutor not found"})
+            return res.status(403).json({ status : 0, message : "Only tutor can add course"})
         }
 
         const createCourse = new courseModel({
             tutorId,
             title,
             description,
-            video : req.file.path,
-            material : req.file.path,
+            video : videoFile.path,
+            material : materialFile.path,
             price,
             category
         })
         const course = await createCourse.save()
 
         res.status(201).json({ status : 1, message : "course added sucessfully", data : course})
+
     } catch(err){
         console.log(err);
         res.status(500).json({ status : 0, message : "error while add course by tutor " })

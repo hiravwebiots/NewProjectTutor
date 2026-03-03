@@ -15,13 +15,14 @@ const otpScheama = mongoose.Schema({
         type : String,
         default : null
     },
-
-    otpExpire : {
+    purpose : {
+        type : String
+    },
+    isOtpVerified : {
         type : String,
         default : null
     },
-
-    isOtpVerified : {
+    otpExpire : {
         type : String,
         default : null
     }

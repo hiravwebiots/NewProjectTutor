@@ -2,6 +2,7 @@ const userModel = require('../model/userModel')
 const otpModel = require('../model/otpModel')
 const emailTemplateModel = require('../model/emailTemplateModel')
 
+// ==== Send OTP ====
 const sendOtp = async(req, res) => {
     try {
         const { email } = req.body;
@@ -11,17 +12,21 @@ const sendOtp = async(req, res) => {
             return res.status(400).json({ status : 0, message : "user not found while send otp" })
         }
 
+        // purpose of otp
+        const purpose = "forgotPassword"
+
         // ==== Generate 6 Digit OTP =====
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // ==== Delete old OTP if exists ====
-        await otpModel.deleteMany({ userId : user.id }) 
+        await otpModel.deleteMany({ userId : user.id, purpose }) 
 
-        // ==== Save OTP in otp collection ====
+        // ==== Save OTP ====
         const otpData = new otpModel({
             userId : user._id,
             email : user.email,
             otp : otp,
+            purpose : purpose,
             isOtpVerified : false
         })
         await otpData.save()
@@ -57,8 +62,9 @@ const verifyOtp = async (req, res) => {
 
         // ==== Find OTP Record ====
         const otpData = await otpModel.findOne({ 
-            email : email,
-            otp : otp
+            email,
+            otp,
+            purpose
          })
 
          if(!otpData){
@@ -91,17 +97,33 @@ const forgotPassword = async (req, res) => {
 
         // ==== Find User Record ====
         const user = await userModel.findOne({ email })
+        if(!user){
+            return res.status(400).json({ status : 0, message : "user not found" })
+        }
+
+        const purpose = 'forgotPassword'
 
         // ==== Find OTP Record ====
-        const otp = await otpModel.findOne({ email : email })
+        const otpData = await otpModel.findOne({ 
+            email : email,
+            purpose,
+            isOtpVerified : true
+        })
 
-        if(otp.isOtpVerified !== true){
+        if(!otpData){
             return res.status(400).send({ status : 0, message : "Please first Verified the OTP"})
         }
 
+        // Check expiry again for safety
+        if (otpData.expireAt < Date.now()) {
+            return res.status(400).json({ status: 0, message: "OTP expired" });
+        }
+
+        // hash new password
         const hashPassword = await bcrypt.hash(newPassword, 10)
         user.password = hashPassword
         otp.isOtpVerified = false;
+        
         await user.save()
         await otp.save()
 
