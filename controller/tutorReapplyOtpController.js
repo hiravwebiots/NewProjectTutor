@@ -6,8 +6,8 @@ const sendReapplyotp = async(req, res) => {
     try{
         const userId = req.user.id
 
-        const user = await userModel.findById(userId);
-        if(!user || user.role !== "tutor"){
+        const user = await userModel.findById(userId).populate('role');
+        if(!user || user.role.name !== "tutor"){
             return res.status(403).json({ status : 0, message : "Only tutor allowed" })
         }
 
@@ -94,9 +94,9 @@ const reapplyTutor = async(req, res) => {
     try{
         const userId = req.user.id
 
-        const user = await userModel.findById(userId)
+        const user = await userModel.findById(userId).populate('role')
 
-        if(!user || user.role !== "tutor"){
+        if(!user || user.role.name !== "tutor"){
             return res.status(400).json({ status : 0, message : "only tutor allowed" })
         }
 

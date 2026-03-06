@@ -23,8 +23,6 @@ const addCourse = async(req, res) => {
         console.log("material : ", materialFile);
         
 
-        
-        
         if(!title || !description || !videoFile ||  !materialFile || !price || !category){
             return res.status(400).json({ status : 0, message : "all fileds are required in add Course" })
         }
@@ -32,7 +30,7 @@ const addCourse = async(req, res) => {
         
         // ==== check exist tutor ====
         const checkTutor = await userModel.findById(tutorId)
-        if(!checkTutor || checkTutor.role !== 'tutor'){
+        if(!checkTutor || checkTutor.role.name !== 'tutor'){
             return res.status(403).json({ status : 0, message : "Only tutor can add course"})
         }
 

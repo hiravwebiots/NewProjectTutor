@@ -26,7 +26,7 @@ const checkRole = (allowRole) => {
                 next();
             } else{
                 return res.status(403).json({ status : 0, message: "you are not allow for this operation, Access denied" });
-            }   
+            }
         } catch(err){
             console.log(err);
             return res.status(500).json({ status : 0, message : "error while checkROle" })

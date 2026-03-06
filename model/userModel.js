@@ -22,11 +22,18 @@ const userSchema = new mongoose.Schema({
         required: true
     },
 
-    role: {
-        type: String,
-        enum: ["student", "tutor", "admin"],
-        default: "student"
+    roleId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : 'role',
+        require : true
     },
+
+
+    // role: {
+    //     type: String,
+    //     enum: ["student", "tutor", "admin"],
+    //     default: "student"
+    // },
 
     // student-only fields
     interestOfField : {

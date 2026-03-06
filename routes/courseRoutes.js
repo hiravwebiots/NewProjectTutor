@@ -18,3 +18,9 @@ routes.put('/update/:id', checkAuthentication, checkRole(['admin', 'tutor']), up
 routes.delete('/delete/:id', checkAuthentication, checkRole(['admin', 'tutor']), deleteCourse)
 
 module.exports = routes
+
+    // "course_create",
+    // "course_view",
+    // "course_view_self",
+    // "course_update",
+    // "course_delete"

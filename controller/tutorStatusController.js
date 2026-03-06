@@ -1,11 +1,15 @@
 const emailTemplateModel = require('../model/emailTemplateModel');
+const roleModel = require('../model/roleModel');
 const userModel = require('../model/userModel');
 const sendEmail = require('../utils/sendEmail');
 
 const checkTutorStatus = async (req, res) => {
     try{
-        const tutors = await userModel.find({ role : 'tutor',  approvalStatus : 'pending'}).select('-password')
 
+        const tutorRole = await roleModel.findOne({ name : "tutor"})
+
+        const tutors = await userModel.find({ role : tutorRole.id,  approvalStatus : 'pending'}).select('-password').populate('role')
+        
         // tutro if not pending & find return blank array[] so need length === 0 
         if (tutors.length === 0) {
             return res.status(200).json({ status: 0, message: 'No pending tutors found'});
@@ -28,14 +32,14 @@ const updateTutorStatus = async (req, res) => {
         }
 
         // ==== Find tutor ====
-        const tutor = await userModel.findById(tutorId)
-        if(!tutor || tutor.role !== 'tutor'){
+        const tutor = await userModel.findById(tutorId).populate('role')
+        if(!tutor || tutor.role.name !== 'tutor'){
             return res.status(404).json({ status : 0, message : 'tutor not found' })
         }
 
         // ====  Allow only pending or rejected to be updated ====
         if(tutor && !['pending', 'rejected'].includes(tutor.approvalStatus)){
-            return res.status(404).json({ status : 0, message : "pennding & rejection tutor aren't available" })
+            return res.status(400).json({ status : 0, message : "pennding & rejection tutor aren't available" })
         }
 
         if(approvalStatus === 'rejected' && !rejectionReason){
@@ -83,7 +87,7 @@ const updateTutorStatus = async (req, res) => {
                 template.content,
                 {
                     name : tutor.name,
-                    reason : tutor.reason
+                    reason : rejectionReason
                 }
             )
         }

@@ -2,14 +2,34 @@ const userModel = require('../model/userModel')
 const courseModel = require('../model/courseModel')
 const fs = require('fs')
 const path = require('path')
+const roleModel = require('../model/roleModel')
 
 const getAllProfile = async (req, res) => {
     try{
-        const users = await userModel.find({ role : { $ne : "admin" } }).select('-password')
+        const adminRole = await roleModel.findOne({ name : 'admin' })
+
+        const users = await userModel.find({ role : { $ne : adminRole.id } }).select('-password').populate('role')
         res.status(200).json({ status : 1, message : "Get All user by admin", data : users})
     } catch(err){
         console.log(err);
         res.status(500).json({ status : 0, message : "error while get all user profile by admin" })
+    }
+}
+
+// get selfProfile
+const getSelfProfile = async (req, res) => {
+    try{
+        const userId = req.user.id
+
+        const user = await userModel.findById(userId).select('-password').populate('role', 'name')
+        if(!user){
+            return res.status(400).json({ status : 0, message : "user not found" })
+        }
+
+        res.status(200).json({ status : 1, message : "profile details fetched", data : user})
+    } catch(err){
+        console.log(err);
+        res.status(500).json({ status : 0, message : "error while getting Self Profile" })
     }
 }
 
@@ -20,18 +40,18 @@ const updateProfile = async (req, res) => {
 
         const { name, phone, interestOfField, bio, experience, qualification } = req.body;
 
-        const user = await userModel.findById(userId).select('-password');
+        const user = await userModel.findById(userId).select('-password').populate('role')
         if (!user) {
             return res.status(404).json({ status: 0, message: "User not found" });
         }
 
         // ==== student update ====
-        if (user.role === "student") {
+        if (user.role.name === "student") {
             if (interestOfField) user.interestOfField = interestOfField;
         }
 
         // ==== tutor update ====
-        if (user.role === "tutor") {
+        if (user.role.name === "tutor") {
             // if profile in pending then not updated this
             if(user.approvalStatus === 'pending'){
                 return res.status(400).json({ status : 0, message : "Profile cannot be updated while approval is pending" })
@@ -117,4 +137,4 @@ const deleteProfile = async (req, res) => {
     }
 };
 
-module.exports = { getAllProfile, updateProfile, deleteProfile }
+module.exports = { getAllProfile, getSelfProfile, updateProfile, deleteProfile }
