@@ -1,7 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv').config()
 const PORT = process.env.PORT
-const loginRoutes = require('./routes/loginRoutes')
+const loginRoutes = require('./routes/authRoutes')
 const tutroStatusRoutes = require('./routes/checkStatusRoutes')
 const connectDB = require("./config/db")
 const emaulTemplate = require('./routes/emailTemplateRoutes')
@@ -11,14 +11,22 @@ const course = require('./routes/courseRoutes')
 const tutorReapplyRoutes = require('./routes/tutorReapplyOtpRoutes')
 const roleRoutes = require('./routes/roleRoutes')
 const rolePermission = require('./routes/rolePermissionRoutes')
+const demoRoutes = require('./routes/demoRoutes')
 
 const app = express()
 connectDB()
 
 app.use(express.json())
-app.use(express.urlencoded())
-// app.use(bodyParser.json())
 
+// want to open the file in the browser, then you need:
+app.use('/uploads', express.static('uploads'))
+
+//use for the form-data 
+app.use(express.urlencoded())   
+
+// ejs set in views folder
+app.set('view engine', 'ejs')
+ 
 app.use('/api/user', loginRoutes)
 app.use('/api/email-template', emaulTemplate)
 app.use('/api/login', otpRoutes)
@@ -28,6 +36,7 @@ app.use('/api/tutor/course', course)
 app.use('/api/tutor/reapply', tutorReapplyRoutes)
 app.use('/api/role', roleRoutes)
 app.use('/api/rolepermission', rolePermission)
+app.use('/api', demoRoutes)
 
 app.listen(PORT, () => {
     console.log(`Server run on port no.${PORT}`);

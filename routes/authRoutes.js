@@ -1,5 +1,5 @@
 const express = require('express')
-const { signupUser, loginUser } = require('../controller/loginController')
+const { signupUser, loginUser } = require('../controller/authController')
 const { uploadDegree } = require('../middleware/fileUpload')
 const routes = express()
 

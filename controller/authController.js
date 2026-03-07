@@ -1,7 +1,7 @@
 const userModel = require('../model/userModel')
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const roleModel = require('../model/roleModel');
+const bcrypt = require("bcrypt");   
+const jwt = require("jsonwebtoken");
 // multer call or not here?
 
 // Signup Student & tutor
@@ -10,6 +10,7 @@ const signupUser = async(req, res) => {
         const { name, email, password, phone, roleId, interestOfField, bio, experience, qualification } = req.body
         // degreeCertificate in file
 
+        // == required filed
         if(!name || !email || !password || !phone || !roleId){
             return res.status(400).json({ status : 0, message : "Required Filled Missing" })
         }
@@ -25,47 +26,56 @@ const signupUser = async(req, res) => {
         if(existUser){
             return res.status(400).json({ status : 0, message : "Email already registered" })
         }
- 
+
         // ==== phone validation ====
         const phoneRegex = /^[6-9]\d{9}$/ 
         if(!phoneRegex.test(phone)){      
             return res.status(400).json({ status : 0, message : "Invalid phone formate" })
         }
 
-        // == Find Role ==
-        const existRole = await roleModel.findById(roleId)
-                
-        if(!existRole){
-            return res.status(400).json({ status : 0, message : "Invalid role" })
-        }
-
-        console.log('roleId : ', roleId);
-        console.log('existRole : ', existRole);
-        
-    
-        // ==== Role wise validation ======
-        if(roleId === 'student' && !interestOfField){
-            return res.status(400).json({ status : 0, message : `All Student Filled is required` })
-        }
-        
-        if(roleId === 'tutor' && (!bio || !experience || !qualification || !req.file)){
-            return res.status(400).json({ status : 0,  message : "All tutor filled is required" })
+        // == Check Role ==
+        const roleData = await roleModel.findById(roleId)
+        console.log("🚀 ~ signupUser ~ roleData:", roleData)
+        if(!roleData){
+            return res.status(400).json({ status : 0, message : "Invalid role Selected" })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // ==== Role wise validation ======
+        if(roleData.name === 'student'){
+            if(!interestOfField){
+                return res.status(400).json({ status : 0, message : `Interest of field is required for student` })
+            }
+        }
+
+        if(roleData.name === 'tutor'){
+            // console.log("🚀 ~ signupUser ~ bio:", bio)
+            // console.log("🚀 ~ signupUser ~ experience:", experience)
+            // console.log("🚀 ~ signupUser ~ qualification:", qualification)
+            // console.log("🚀 ~ signupUser ~ req.file:", req.file)
+            if(!bio || !experience || !qualification || !req.file){
+                return res.status(400).json({ status : 0,  message : "All tutor fields is required" })
+            }
+        }
+
+        // === crreate user ===
         const user = await userModel.create({
             name,
             email,
             password: hashedPassword,
             phone,
             roleId,
-            interestOfField : role === 'student' ?  interestOfField : undefined,
-            bio : role === 'tutor' ? bio : undefined,
-            experience : role === 'tutor' ? experience : undefined,
-            qualification : role === 'tutor' ? qualification : undefined,
-            degreeCertificate : role === 'tutor' ? req.file.path : undefined,
-            approvalStatus : role === 'tutor' ? 'pending' : undefined
+
+            interestOfField : roleData.name === 'student' ?  interestOfField : undefined,
+
+            bio : roleData.name === 'tutor' ? bio : undefined,
+            experience : roleData.name === 'tutor' ? experience : undefined,
+            qualification : roleData.name === 'tutor' ? qualification : undefined,
+
+            degreeCertificate : req.file ? req.file.path : undefined,
+
+            approvalStatus : roleData.name === 'tutor' ? 'pending' : undefined
         })
 
         res.status(201).json({ status: 1, message: "User registered successfully", data: user });
@@ -85,7 +95,7 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ status : 0, message : "email and password required"})
         }
 
-        const user = await userModel.findOne({ email })
+        const user = await userModel.findOne({ email }).populate('roleId')
         console.log("user : ", user)
 
         if(!user) {
@@ -101,7 +111,8 @@ const loginUser = async (req, res) => {
         user.password = undefined
 
         // tutor approval check
-        if(user.role.name === "tutor"){
+        console.log("🚀 ~ loginUser ~ user.roleId.name:", user.roleId.name)
+        if(user.roleId.name === "tutor"){
             if(user.approvalStatus === 'pending'){
                 return res.status(403).json({ status : 0, message: "Wait for admin approval"});
             }
@@ -112,9 +123,14 @@ const loginUser = async (req, res) => {
         }
 
         const tokenObj = {
-            id: user._id, 
-            role: user.role.name
+            id: user._id,
+            name: user.name,
+            role : user.roleId
         }
+        console.log("🚀 ~ loginUser ~ tokenObj:", tokenObj)
+
+        
+
         const token = jwt.sign( tokenObj, process.env.SECRET, { expiresIn: "1h" });
 
         res.status(201).json({ status : 1, message: "Login successful", token, data : user });
