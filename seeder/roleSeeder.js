@@ -3,10 +3,11 @@ const roleModel = require('../model/roleModel')
 const seedRole = async () => {
     try{
         const role = {
-            name : 'admin'
+            name : 'admin',
+            type : 'admin'
         }
 
-        const exist = await roleModel.find({ name : role.name })
+        const exist = await roleModel.findOne({ name : role.name })
 
         if(!exist){
             await roleModel.create(role)

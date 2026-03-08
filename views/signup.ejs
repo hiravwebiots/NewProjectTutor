@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Signup</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>User Signup</h2>
+
+        <form action="/api/user/signup" method="POST" enctype="multipart/form-data">
+
+            <input type="text" name="name" placeholder="Full Name" required>
+
+            <input type="email" name="email" placeholder="Email" required>
+
+            <input type="password" name="password" placeholder="Password" required>
+
+            <input type="text" name="phone" placeholder="Phone Number" required>
+
+            <!-- ROLE -->
+
+            <div class="role-box">
+
+                <label>Select Role</label>
+
+                <div class="radio-group">
+
+                    <label>
+                        <input type="radio" name="roleId" value="<%= studentRoleId %>" onclick="selectRole('student')"
+                            required>
+                        Student
+                    </label>
+
+                    <label>
+                        <input type="radio" name="roleId" value="<%= tutorRoleId %>" onclick="selectRole('tutor')">
+                        Tutor
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- STUDENT FIELD -->
+
+            <div id="studentFields" class="hidden">
+
+                <label>Interest Of Field</label>
+
+                <input type="text" name="interestOfField" placeholder="Example: Web Development">
+
+            </div>
+
+
+            <!-- TUTOR FIELDS -->
+
+            <div id="tutorFields" class="hidden">
+
+                <label>Bio</label>
+
+                <textarea name="bio"></textarea>
+
+                <label>Experience</label>
+
+                <input type="text" name="experience">
+
+                <label>Qualification</label>
+
+                <input type="text" name="qualification">
+
+                <label>Degree Certificate</label>
+
+                <input type="file" name="degreeCertificate">
+
+            </div>
+
+
+            <button type="submit">Signup</button>
+
+        </form>
+
+    </div>
+
+
+    <script>
+
+        function selectRole(role) {
+
+            const student = document.getElementById("studentFields")
+            const tutor = document.getElementById("tutorFields")
+
+            if (role === "student") {
+
+                student.style.display = "block"
+                tutor.style.display = "none"
+
+            }
+
+            if (role === "tutor") {
+
+                student.style.display = "none"
+                tutor.style.display = "block"
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

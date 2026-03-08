@@ -1,7 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv').config()
 const PORT = process.env.PORT
-const loginRoutes = require('./routes/authRoutes')
+const authRoutes = require('./routes/authRoutes')
 const tutroStatusRoutes = require('./routes/checkStatusRoutes')
 const connectDB = require("./config/db")
 const emaulTemplate = require('./routes/emailTemplateRoutes')
@@ -26,8 +26,33 @@ app.use(express.urlencoded())
 
 // ejs set in views folder
 app.set('view engine', 'ejs')
+
+// Static file -- public folder
+app.use('/public', express.static('public'))
+
+// =============== EJS Pages ===============
+const roleModel = require('./model/roleModel')
+// render signup page
+app.get('/signup', async (req, res) => {
+
+    const studentRole = await roleModel.findOne({ type: 'student' })
+    console.log("🚀 ~ studentRole:", studentRole)
+    const tutorRole = await roleModel.findOne({ type: 'tutor' })
+
+    res.render('signup', {
+        studentRoleId: studentRole.id,
+        tutorRoleId: tutorRole.id
+    })
+})
  
-app.use('/api/user', loginRoutes)
+// render login page
+app.get('/login', (req, res) => {
+    res.render('login')
+})
+
+
+// ===== API Routes =====
+app.use('/api/user', authRoutes)
 app.use('/api/email-template', emaulTemplate)
 app.use('/api/login', otpRoutes)
 app.use('/api/tutor-status', tutroStatusRoutes)

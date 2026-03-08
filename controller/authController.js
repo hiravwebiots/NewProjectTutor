@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 // multer call or not here?
 
-// Signup Student & tutor
+// ================================ SIGNUP ================================
 const signupUser = async(req, res) => {
     try{
         const { name, email, password, phone, roleId, interestOfField, bio, experience, qualification } = req.body
@@ -35,21 +35,21 @@ const signupUser = async(req, res) => {
 
         // == Check Role ==
         const roleData = await roleModel.findById(roleId)
-        console.log("🚀 ~ signupUser ~ roleData:", roleData)
+        // console.log("🚀 ~ signupUser ~ roleData:", roleData)
         if(!roleData){
-            return res.status(400).json({ status : 0, message : "Invalid role Selected" })
+            return res.status(400).json({ status : 0, message : "Invalid role" })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // ==== Role wise validation ======
-        if(roleData.name === 'student'){
+        if(roleData.type === 'student'){
             if(!interestOfField){
                 return res.status(400).json({ status : 0, message : `Interest of field is required for student` })
             }
         }
 
-        if(roleData.name === 'tutor'){
+        if(roleData.type === 'tutor'){
             // console.log("🚀 ~ signupUser ~ bio:", bio)
             // console.log("🚀 ~ signupUser ~ experience:", experience)
             // console.log("🚀 ~ signupUser ~ qualification:", qualification)
@@ -59,6 +59,9 @@ const signupUser = async(req, res) => {
             }
         }
 
+        const isStudent = roleData.type === 'student'
+        const isTutor = roleData.type === 'tutor'
+
         // === crreate user ===
         const user = await userModel.create({
             name,
@@ -67,15 +70,15 @@ const signupUser = async(req, res) => {
             phone,
             roleId,
 
-            interestOfField : roleData.name === 'student' ?  interestOfField : undefined,
+            interestOfField: isStudent ?  interestOfField : undefined,
 
-            bio : roleData.name === 'tutor' ? bio : undefined,
-            experience : roleData.name === 'tutor' ? experience : undefined,
-            qualification : roleData.name === 'tutor' ? qualification : undefined,
+            bio: isTutor ? bio : undefined,
+            experience: isTutor ? experience : undefined,
+            qualification: isTutor ? qualification : undefined,
 
-            degreeCertificate : req.file ? req.file.path : undefined,
+            degreeCertificate: req.file ? req.file.path : undefined,
 
-            approvalStatus : roleData.name === 'tutor' ? 'pending' : undefined
+            approvalStatus: isTutor ? 'pending' : undefined
         })
 
         res.status(201).json({ status: 1, message: "User registered successfully", data: user });
@@ -86,7 +89,7 @@ const signupUser = async(req, res) => {
     }
 }
 
-// login
+// ================================ LOGIN ================================
 const loginUser = async (req, res) => {
     try{
         let { email, password } = req.body;
@@ -111,7 +114,6 @@ const loginUser = async (req, res) => {
         user.password = undefined
 
         // tutor approval check
-        console.log("🚀 ~ loginUser ~ user.roleId.name:", user.roleId.name)
         if(user.roleId.name === "tutor"){
             if(user.approvalStatus === 'pending'){
                 return res.status(403).json({ status : 0, message: "Wait for admin approval"});
@@ -125,11 +127,9 @@ const loginUser = async (req, res) => {
         const tokenObj = {
             id: user._id,
             name: user.name,
-            role : user.roleId
+            role : user.roleId.type
         }
         console.log("🚀 ~ loginUser ~ tokenObj:", tokenObj)
-
-        
 
         const token = jwt.sign( tokenObj, process.env.SECRET, { expiresIn: "1h" });
 

@@ -1,13 +1,14 @@
 const roleModel = require('../model/roleModel')
 const rolePemissionModel = require('../model/rolePermissionModel')
 
+// ================================ CREATE ROLE ================================
 const createRole = async(req, res) => {
     try{
-        const { name, description } = req.body
+        const { name, type } = req.body
 
         // == role name is required ==
-        if(!name){
-            return res.status(400).json({ status : 0, message : "name is required" })
+        if(!name || !type){
+            return res.status(400).json({ status : 0, message : "name & type are required" })
         }
 
         const existRole = await roleModel.findOne({ name })
@@ -17,7 +18,7 @@ const createRole = async(req, res) => {
 
         const role = await roleModel.create({
             name,
-            description
+            type
         })
 
         res.status(201).json({ status : 1, message : "Role Created", data : role })
@@ -28,7 +29,7 @@ const createRole = async(req, res) => {
     }
 }
 
-// == read all roles users ==
+// ================================ READ ALL ROLES ================================
 const readAllRole = async(req, res) => {
     try{    
         const roles = await roleModel.find()
@@ -39,7 +40,7 @@ const readAllRole = async(req, res) => {
     }
 }
 
-// == read role by name ==
+// ================================ READ ROLE BY NAME ================================
 const readRoleByName = async (req, res) => {
     try{
         const { role } = req.query
@@ -49,20 +50,20 @@ const readRoleByName = async (req, res) => {
             return res.status(404).json({ status : 0, message : "role not found" })
         }
 
-        res.stataus(200).json({ status : 1, message : "Role fetched successfully", data : roleData})
+        res.status(200).json({ status : 1, message : "Role fetched successfully", data : roleData})
 
     } catch(err){
         console.log(err);
-        res.stataus(500).json({ status : 0, message : "error while read role by name", error : err})
+        res.status(500).json({ status : 0, message : "error while read role by name", error : err})
     }
 }
 
-
+// ================================ UPDATE ROLE ================================
 const updateRole = async(req, res) => {
     try{
         const roleId = req.params.id
+        const { name } = req.body
 
-        
         const checkRole = await roleModel.findById(roleId)
         if(!checkRole){
             return res.status(400).json({ status : 0, message : "role not found" })
@@ -80,8 +81,7 @@ const updateRole = async(req, res) => {
         }
 
         const updateData = {
-            name : req.body.name || name,
-            description : req.body.description || description
+            name : req.body.name || name
         }
 
         const updateRole = await roleModel.findByIdAndUpdate(
@@ -98,6 +98,7 @@ const updateRole = async(req, res) => {
     }
 }
 
+// ================================ DELETE ROLE ================================
 const deleteRole = async(req, res) => {
     try{
         const roleId = req.params.id

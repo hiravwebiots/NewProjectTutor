@@ -22,6 +22,7 @@ const checkAuthentication = (req, res, next) => {
 const checkRole = (allowRole) => {
     return (req, res, next) => {
         try{
+            console.log("🚀 ~ checkRole ~ req.user.role.type:", req.user.role)
             if(allowRole.includes(req.user.role)){
                 next();
             } else{
@@ -34,4 +35,4 @@ const checkRole = (allowRole) => {
     }
 };
 
-module.exports = { checkAuthentication, checkRole }
+module.exports = { checkAuthentication, checkRole }  

@@ -12,11 +12,12 @@ const runSeeder = async () => {
         await mongoose.connect(process.env.DB_URL)
         console.log("DB Connected to Seeder");
         
+        await seedRole()
+        console.log('seedRole');
+        
         await seedAdmin()
         console.log('seedAdmin');
         
-        await seedRole()
-        console.log('seedRole');
 
         await seedPermission()
         console.log('seedPermission');

@@ -6,6 +6,7 @@ const seedAdmin = async () => {
     try{
         // // ==== Find Admin Role ==== 
         const adminRole = await roleModel.findOne({ name : "admin" })
+        console.log("adminRole : ", adminRole); 
         // if(!adminRole){
         //     console.log('Admin role not found. Please run role seeder first');
         //     return;
@@ -21,7 +22,7 @@ const seedAdmin = async () => {
                 email : process.env.ADMIN_EMAIL,
                 password : hashPassword,
                 phone : 7069146434,
-                role : adminRole.id,
+                roleId : adminRole.id,  
                 approvalStatus : "approved"
             })
             console.log('Default Admin Created');

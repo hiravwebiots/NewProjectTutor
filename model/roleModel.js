@@ -3,21 +3,18 @@ const mongoose = require('mongoose')
 const roleSchema = mongoose.Schema({
     name : {
         type : String,
-        require : true,
+        required : true,
         unique : true
     },
 
-    description : {
-        type : String
-    },
-
-    isActive : {
-        type : Boolean,
-        default : true
+    type : {
+        type : String,
+        required : true,
+        enum : ['student', 'tutor', 'admin']
     }
 },
     {
-    timestamps : true
+        timestamps : true
     }   
 )
 
