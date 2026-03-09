@@ -5,7 +5,7 @@
 
     <title>Signup</title>
 
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
 
 </head>
 
@@ -14,6 +14,14 @@
     <div class="container">
 
         <h2>User Signup</h2>
+
+        <% if(error) { %>
+            <p style="color: red;"><%= error %></p>
+        <% } %>
+
+        <% if(message) { %>
+            <p style="color: green;"><%= message %></p>
+        <% } %>
 
         <form action="/api/user/signup" method="POST" enctype="multipart/form-data">
 
@@ -26,28 +34,20 @@
             <input type="text" name="phone" placeholder="Phone Number" required>
 
             <!-- ROLE -->
-
             <div class="role-box">
+            
+                <span>Select Role : </span>
 
-                <label>Select Role</label>
+            <label class="radio-group">
+                <input type="radio" name="roleId" value="<%= studentRoleId %>" onclick="selectRole('student')" required>
+                Student
+            </label>
 
-                <div class="radio-group">
-
-                    <label>
-                        <input type="radio" name="roleId" value="<%= studentRoleId %>" onclick="selectRole('student')"
-                            required>
-                        Student
-                    </label>
-
-                    <label>
-                        <input type="radio" name="roleId" value="<%= tutorRoleId %>" onclick="selectRole('tutor')">
-                        Tutor
-                    </label>
-
-                </div>
-
-            </div>
-
+            <label class="radio-group">
+                <input type="radio" name="roleId" value="<%= tutorRoleId %>" onclick="selectRole('tutor')" required>
+                Tutor
+            </label>
+        </div>
 
             <!-- STUDENT FIELD -->
 
@@ -70,7 +70,7 @@
 
                 <label>Experience</label>
 
-                <input type="text" name="experience">
+                <input type="text" name="experience" placeholder="years of experience">
 
                 <label>Qualification</label>
 
@@ -85,6 +85,11 @@
 
             <button type="submit">Signup</button>
 
+            <!-- <label for="login-link">Already have an account? <a href="/login">Login</a> -->
+            <p class="link"> 
+                Already have an account? <a href="/login">Login</a> 
+            </p>
+
         </form>
 
     </div>
@@ -92,27 +97,28 @@
 
     <script>
 
-        function selectRole(role) {
+        function selectRole(type) {
 
             const student = document.getElementById("studentFields")
             const tutor = document.getElementById("tutorFields")
 
-            if (role === "student") {
+            console.log('student : ', student);
+            
+
+            if (type === "student") {
 
                 student.style.display = "block"
                 tutor.style.display = "none"
 
             }
 
-            if (role === "tutor") {
+            if (type === "tutor") {
 
                 student.style.display = "none"
                 tutor.style.display = "block"
 
             }
-
         }
-
     </script>
 
 </body>

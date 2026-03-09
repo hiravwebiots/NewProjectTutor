@@ -1,9 +1,13 @@
 const express = require('express')
 const dotenv = require('dotenv').config()
 const PORT = process.env.PORT
+const connectDB = require("./config/db")
+const path = require('path')
+const cookieParser = require('cookie-parser')
+
+// routes 
 const authRoutes = require('./routes/authRoutes')
 const tutroStatusRoutes = require('./routes/checkStatusRoutes')
-const connectDB = require("./config/db")
 const emaulTemplate = require('./routes/emailTemplateRoutes')
 const otpRoutes = require('./routes/otpRoutes')
 const profile = require('./routes/profileRoutes')
@@ -13,45 +17,58 @@ const roleRoutes = require('./routes/roleRoutes')
 const rolePermission = require('./routes/rolePermissionRoutes')
 const demoRoutes = require('./routes/demoRoutes')
 
-const app = express()
 connectDB()
+const app = express()
 
+
+// This allows EJS form data → req.body
 app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 
-// want to open the file in the browser, then you need:
+app.use(cookieParser())
+
+// use for save files 
 app.use('/uploads', express.static('uploads'))
 
-//use for the form-data 
-app.use(express.urlencoded())   
+// ----------------- View & Assets -----------------
+app.set('view engine', 'ejs')    // ejs set in views folder
+app.set('views', path.join(__dirname, 'views'))
 
-// ejs set in views folder
-app.set('view engine', 'ejs')
 
-// Static file -- public folder
-app.use('/public', express.static('public'))
+// appending static files and parsers
+app.use(express.static(path.join(__dirname, 'public')))
 
-// =============== EJS Pages ===============
-const roleModel = require('./model/roleModel')
+
+
+// =============== EJS Pages ==========================================================
+const roleModel = require('./models/roleModel')
+const { verifyToken } = require('./middlewares/auth')
+
 // render signup page
 app.get('/signup', async (req, res) => {
 
     const studentRole = await roleModel.findOne({ type: 'student' })
-    console.log("🚀 ~ studentRole:", studentRole)
     const tutorRole = await roleModel.findOne({ type: 'tutor' })
 
-    res.render('signup', {
+    res.render('signup', {  
         studentRoleId: studentRole.id,
-        tutorRoleId: tutorRole.id
+        tutorRoleId: tutorRole.id,
+        error : null,
+        message : null
     })
 })
- 
-// render login page
+
 app.get('/login', (req, res) => {
-    res.render('login')
+    res.render('login', {error : null, message : null})
 })
 
 
-// ===== API Routes =====
+app.get('/dashboard', verifyToken, async (req, res) => {
+    res.render('dashboard', {user : req.user})
+})
+// =====================================================================================
+
+// Routes
 app.use('/api/user', authRoutes)
 app.use('/api/email-template', emaulTemplate)
 app.use('/api/login', otpRoutes)

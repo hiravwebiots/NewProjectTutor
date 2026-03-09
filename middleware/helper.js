@@ -1,2 +1,0 @@
-// helper function for "role has permission"  table to check it's exist or  not and no duplicate 
-// remaining

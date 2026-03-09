@@ -1,7 +1,7 @@
 const express = require('express')
-const { addCourse, getCourse, updateCourse, deleteCourse, getSelfCourse } = require('../controller/courseController')
-const { checkAuthentication, checkRole } = require('../middleware/auth')
-const { uploadCourseFiles } = require('../middleware/fileUpload')
+const { addCourse, getCourse, updateCourse, deleteCourse, getSelfCourse } = require('../controllers/courseController')
+const { checkAuthentication, checkRole } = require('../middlewares/auth')
+const { uploadCourseFiles } = require('../middlewares/fileUpload')
 const routes = express()
 
 routes.post('/create', checkAuthentication, checkRole(['admin', 'tutor']), uploadCourseFiles.fields([

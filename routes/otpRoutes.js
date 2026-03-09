@@ -1,5 +1,5 @@
 const express = require('express')
-const { sendOtp, verifyOtp, forgotPassword } = require('../controller/otpController')
+const { sendOtp, verifyOtp, forgotPassword } = require('../controllers/otpController')
 const routes = express()
 
 routes.post('/sendotp', sendOtp)

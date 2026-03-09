@@ -1,7 +1,7 @@
 const express = require('express')
-const { checkAuthentication, checkRole } = require('../middleware/auth')
-const { updateProfile, deleteProfile, getAllProfile, getSelfProfile } = require('../controller/profileController')
-const { uploadDegree } = require('../middleware/fileUpload')
+const { checkAuthentication, checkRole } = require('../middlewares/auth')
+const { updateProfile, deleteProfile, getAllProfile, getSelfProfile } = require('../controllers/profileController')
+const { uploadDegree } = require('../middlewares/fileUpload')
 const routes = express()
 
 // get all profile by admin

@@ -1,6 +1,6 @@
 const express = require('express')
-const { checkAuthentication, checkRole } = require('../middleware/auth')
-const { createRolePermission, readRolePemission, readRolesAllPermission, updateRolePemission } = require('../controller/rolePermissionController')
+const { checkAuthentication, checkRole } = require('../middlewares/auth')
+const { createRolePermission, readRolePemission, readRolesAllPermission, updateRolePemission } = require('../controllers/rolePermissionController')
 const routes = express()
 
 routes.post('/create', checkAuthentication, checkRole('admin'), createRolePermission)

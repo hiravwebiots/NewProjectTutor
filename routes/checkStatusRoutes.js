@@ -1,6 +1,6 @@
 const express = require('express')
-const { checkTutorStatus, updateTutorStatus } = require('../controller/tutorStatusController')
-const { checkRole, checkAuthentication } = require('../middleware/auth')
+const { checkTutorStatus, updateTutorStatus } = require('../controllers/tutorStatusController')
+const { checkRole, checkAuthentication } = require('../middlewares/auth')
 const routes = express()
 
 // Check Pendding Tutors

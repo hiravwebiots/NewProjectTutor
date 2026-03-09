@@ -1,6 +1,6 @@
 const express = require('express')
-const { createTemplate, readTemplate, updateTemplate, deleteTemplate } = require('../controller/emailTemplateController')
-const { checkAuthentication, checkRole } = require('../middleware/auth')
+const { createTemplate, readTemplate, updateTemplate, deleteTemplate } = require('../controllers/emailTemplateController')
+const { checkAuthentication, checkRole } = require('../middlewares/auth')
 const routes = express()
 
 routes.post('/create', checkAuthentication, checkRole('admin'), createTemplate)

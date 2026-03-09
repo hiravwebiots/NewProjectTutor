@@ -1,0 +1,209 @@
+const userModel = require('../models/userModel')
+const roleModel = require('../models/roleModel');
+const bcrypt = require("bcrypt");   
+const jwt = require("jsonwebtoken");
+// multer call or not here?
+
+// ================================ SIGNUP ================================
+const signupUser = async(req, res) => {
+    try{
+        const { name, email, password, phone, roleId, interestOfField, bio, experience, qualification } = req.body
+        // degreeCertificate in file
+
+        const studentRole = await roleModel.findOne({ type : 'student' })        
+        const tutorRole = await roleModel.findOne({ type : 'tutor' })
+
+        // == required filed ==
+        // bio not required
+        if(!name || !email || !password || !phone){
+            return res.render('signup', { 
+                error : "All Filled is Required", 
+                message : null,
+                studentRoleId : studentRole.id,
+                tutorRoleId : tutorRole.id
+             })
+            // return res.status(400).json({ status : 0, message : "Required Filled Missing" })
+        }
+
+        // == email validaton ==
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;     
+        if(!emailRegex.test(email)){
+            return res.render('signup', {
+                error : "Invalid email formate",
+                message : null,
+                studentRoleId : null,
+                tutorRoleId : null
+            })
+            // return res.status(400).json({ status : 0, message : "Invalid email formate" })
+        }
+
+
+        // == email already exist ==
+        const existUser = await userModel.findOne({ email })
+        if(existUser){
+            return res.render('signup', { 
+                error : "Email already registered",
+                message : null,
+                studentRoleId : null,
+                tutorRoleId : null   
+            })
+            // return res.status(400).json({ status : 0, message : "Email already registered" })
+        }
+
+        // ==== phone validation ====
+        const phoneRegex = /^[6-9]\d{9}$/ 
+        if(!phoneRegex.test(phone)){      
+            return res.render('signup', { 
+                error : "Invalid phone formate",
+                message : null,
+                studentRoleId : null,
+                tutorRoleId : null
+            })
+            // return res.status(400).json({ status : 0, message : "Invalid phone formate" })
+        }
+
+        // == Check Role ==
+        const roleData = await roleModel.findById(roleId)
+        console.log("🚀 ~ signupUser ~ roleData:", roleData)
+        console.log("🚀 ~ signupUser ~ roleData:", roleData.type)
+        
+        if(!roleData){
+            return res.render('signup', { 
+                error : "Invalid Role",
+                message : null,
+                studentRoleId : null,
+                tutorRoleId : null
+            })
+            // return res.status(400).json({ status : 0, message : "Invalid role" })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // ==== Role wise validation ======
+        if(roleData.type === 'student'){
+            if(!interestOfField){
+                return res.render('signup', { 
+                    error : "Interest of field is required for student",
+                    message : null,
+                    studentRoleId : null,      
+                    tutorRoleId : null
+                })
+                // return res.status(400).json({ status : 0, message : `Interest of field is required for student` })
+            }
+        }
+
+        if(roleData.type === 'tutor'){
+            console.log("🚀 ~ signupUser ~ experience:", experience)
+            console.log("🚀 ~ signupUser ~ qualification:", qualification)
+            console.log("🚀 ~ signupUser ~ req.file:", req.file)
+            if(!experience || !qualification || !req.file){
+                return res.render('signup', {
+                    error : "All tutor fields is required",
+                    message : null,
+                    studentRoleId : null,        
+                    tutorRoleId : null    
+                })
+                // return res.status(400).json({ status : 0,  message : "All tutor fields is required" })
+            }
+        }
+
+        const isStudent = roleData.type === 'student'
+        const isTutor = roleData.type === 'tutor'
+        // === crreate user ===
+        const user = await userModel.create({
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            roleId,
+            interestOfField: isStudent ?  interestOfField : undefined,
+            bio: isTutor ? bio : undefined,
+            experience: isTutor ? experience : undefined,
+            qualification: isTutor ? qualification : undefined,
+            degreeCertificate: req.file ? req.file.path : undefined,
+            approvalStatus: isTutor ? 'pending' : undefined
+        })
+
+        res.redirect('/login')
+        // res.redirect('/login', { message : "User registered successfully, Login Now" })
+
+        // res.status(201).json({ status: 1, message: "User registered successfully", data: user });
+
+    } catch(err){
+        console.log(err);
+        res.render('signup', { 
+            error : "error while signup user",
+            message : null,
+            studentRoleId : null,
+            tutorRoleId : null
+        })
+        // res.status(500).json({ status : 0, message : "error while singup user" })
+    }
+}
+
+// ================================ LOGIN ================================
+const loginUser = async (req, res) => {
+    try{
+        let { email, password } = req.body;
+
+        if(!email || !password){
+            return res.render('login', { error : "Email and Password is Required" })
+            // return res.status(400).json({ status : 0, message : "email and password required"})
+        }
+
+        const user = await userModel.findOne({ email }).populate('roleId')
+        console.log("user : ", user)
+
+        if(!user) {
+            return res.render('login', { error : "User not found, email invalid" })
+            // return res.status(404).json({ status : 0, message: "User not found, email invalid" });
+        }
+
+        const isPassword = await bcrypt.compare(password, user.password);
+        if(!isPassword) {
+            return res.render('login', { error : "Invalid Password" })
+            // return res.status(400).json({ status : 0, message: "Invalid Password" });
+        }
+
+        // don't show the password after login data 
+        user.password = undefined
+
+        // tutor approval check
+        if(user.roleId.type === "tutor"){
+            if(user.approvalStatus === 'pending'){
+                return res.render('login', { error : "Wait for admin approval" })
+                // return res.status(403).json({ status : 0, message: "Wait for admin approval"});
+            }
+
+            if(user.approvalStatus === 'rejected'){
+                return res.render('login', { error : "your account was rejected by admin" })
+                // return res.status(400).json({ status : 0, meesage : "your account was rejected by admin", reason : user.rejectionReason })
+            }
+        }
+
+        const tokenObj = {
+            id: user._id,
+            name: user.name,
+            role : user.roleId.type
+        }
+        // console.log("🚀 ~ loginUser ~ tokenObj:", tokenObj)
+
+        const token = jwt.sign( tokenObj, process.env.SECRET, { expiresIn: "1h" });
+
+        // store token in cookie
+        res.cookie("token", token, {
+            httpOnly: true
+        })
+
+        res.redirect('/dashboard')
+        // res.status(201).json({ status : 1, message: "Login successful", token, data : user });
+        // res.render("login", { message : " login successfully" })
+
+    } catch(err){
+        console.log(err);
+        res.render('login', { error : "error while login user" })
+        // res.status(500).send({ status : 0, message : "error while login user" })
+    }
+};
+
+module.exports = { signupUser, loginUser }
